@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-time_limit = 12
+time_limit = 30
 
 state = {
     'time': 0,
@@ -9,21 +9,23 @@ state = {
     'convalescent': 0
 }
 
-h = 1
+h = 0.2
+beta = 2
+gamma = 1
 
 data = [state]
 
 
 def healthy_dt(state):
-    return -(state['healthy'] * state['infected'])
+    return -(beta * state['healthy'] * state['infected'])
 
 
 def infected_dt(state):
-    return state['healthy'] * state['infected']
+    return beta * state['healthy'] * state['infected'] - gamma * state['infected']
 
 
 def convalescent_dt(state):
-    return 0
+    return gamma * state['infected']
 
 
 while state['time'] < time_limit:
@@ -95,6 +97,7 @@ ax.set_xlim([0, time_limit])
 ax.set_ylim([0, 1])
 
 ax.set_title('Healthy + infected + convalescent, Runge-Kutta 4th order method')
+ax.legend(['Healthy', 'Infected', 'Convalescent'])
 
 # display the plot
 plt.show()

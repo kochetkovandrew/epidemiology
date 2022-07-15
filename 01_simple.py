@@ -1,85 +1,90 @@
 import matplotlib.pyplot as plt
 
-time0 = 0.0
 time_limit = 12
-healthy0 = 0.99
-infected0 = 0.01
-h = 1
 
-time_data = [time0]
-healthy_data = [healthy0]
-infected_data = [infected0]
+# current state (on each step)
+state = {
+    'time': 0,
+    'healthy': 0.99,
+    'infected': 0.01,
+}
 
+# step value
+h = 0.1
 
-def healthy_dt(time, healthy, infected):
-    return -(healthy * infected)
-
-
-def infected_dt(time, healthy, infected):
-    return healthy * infected
+# all integrated data
+data = [state]
 
 
-while time0 < time_limit:
-    healthy1 = h * healthy_dt(time0, healthy0, infected0)
-    infected1 = h * infected_dt(time0, healthy0, infected0)
+# dH/dt
+def healthy_dt(state):
+    return -(state['healthy'] * state['infected'])
 
-    healthy2 = h * healthy_dt(
-        time0 + h / 2,
-        healthy0 + healthy1 / 2,
-        infected0 + infected1 / 2
-    )
-    infected2 = h * infected_dt(
-        time0 + h / 2,
-        healthy0 + healthy1 / 2,
-        infected0 + infected1 / 2
-    )
 
-    healthy3 = h * healthy_dt(
-        time0 + h / 2,
-        healthy0 + healthy2 / 2,
-        infected0 + infected2 / 2
-    )
-    infected3 = h * infected_dt(
-        time0 + h / 2,
-        healthy0 + healthy2 / 2,
-        infected0 + infected2 / 2
-    )
+# dI/dt
+def infected_dt(state):
+    return state['healthy'] * state['infected']
 
-    healthy4 = h * healthy_dt(
-        time0 + h,
-        healthy0 + healthy3,
-        infected0 + infected3
-    )
-    infected4 = h * infected_dt(
-        time0 + h,
-        healthy0 + healthy3,
-        infected0 + infected3
-    )
 
-    healthy = (healthy1 + 2 * healthy2 + 2 * healthy3 + healthy4) / 6
-    infected = (infected1 + 2 * infected2 + 2 * infected3 + infected4) / 6
+while state['time'] < time_limit:
+    diff1 = {
+        'healthy': h * healthy_dt(state),
+        'infected': h * infected_dt(state)
+    }
+    arg = {
+        'time': state['time'] + h / 2,
+        'healthy': state['healthy'] + diff1['healthy'] / 2,
+        'infected': state['infected'] + diff1['infected'] / 2
+    }
+    diff2 = {
+        'healthy': h * healthy_dt(arg),
+        'infected': h * infected_dt(arg)
+    }
+    arg = {
+        'time': state['time'] + h / 2,
+        'healthy': state['healthy'] + diff2['healthy'] / 2,
+        'infected': state['infected'] + diff2['infected'] / 2
+    }
+    diff3 = {
+        'healthy': h * healthy_dt(arg),
+        'infected': h * infected_dt(arg)
+    }
+    arg = {
+        'time': state['time'] + h,
+        'healthy': state['healthy'] + diff3['healthy'],
+        'infected': state['infected'] + diff3['infected']
+    }
+    diff4 = {
+        'healthy': h * healthy_dt(arg),
+        'infected': h * infected_dt(arg)
+    }
 
-    healthy_n = healthy0 + healthy
-    infected_n = infected0 + infected
+    new_state = {
+        'time': state['time'] + h,
+        'healthy': state['healthy'] + (
+                    diff1['healthy'] + 2 * diff2['healthy'] + 2 * diff3['healthy'] + diff4['healthy']) / 6,
+        'infected': state['infected'] + (
+                diff1['infected'] + 2 * diff2['infected'] + 2 * diff3['infected'] + diff4['infected']) / 6
+    }
 
-    time_n = time0 + h
-    time_data.append(time_n)
-    healthy_data.append(healthy_n)
-    infected_data.append(infected_n)
-    (time0, healthy0, infected0) = (time_n, healthy_n, infected_n)
+    data.append(new_state)
+    state = new_state
 
 # plot the data
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
-ax.plot(time_data, healthy_data, color='tab:blue')
-ax.plot(time_data, infected_data, color='tab:orange')
+
+ax.plot(list(map(lambda state: state['time'], data)), list(map(lambda state: state['healthy'], data)),
+        color='tab:blue')
+ax.plot(list(map(lambda state: state['time'], data)), list(map(lambda state: state['infected'], data)),
+        color='tab:orange')
 
 # set the limits
 ax.set_xlim([0, time_limit])
 ax.set_ylim([0, 1])
 
 ax.set_title('Healthy + infected, Runge-Kutta 4th order method')
+ax.legend(['Healthy', 'Infected'])
 
 # display the plot
 plt.show()
-
