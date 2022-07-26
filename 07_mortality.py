@@ -59,14 +59,11 @@ while rk4.state['time'] < time_limit:
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
 
-ax.plot(list(map(lambda state: state['time'], rk4.data)), list(map(lambda state: state['healthy'], rk4.data)),
-        color='tab:blue')
-ax.plot(list(map(lambda state: state['time'], rk4.data)), list(map(lambda state: state['infected'], rk4.data)),
-        color='tab:orange')
-ax.plot(list(map(lambda state: state['time'], rk4.data)), list(map(lambda state: state['convalescent'], rk4.data)),
-        color='tab:green')
-ax.plot(list(map(lambda state: state['time'], rk4.data)), list(map(lambda state: state['dead'], rk4.data)),
-        color='tab:red')
+colors = {'healthy': 'tab:blue', 'infected': 'tab:orange', 'convalescent': 'tab:green', 'dead': 'tab:red'}
+
+for key in colors.keys():
+    ax.plot(list(map(lambda state: state['time'], rk4.data)), list(map(lambda state: state[key], rk4.data)),
+            color=colors[key])
 
 # set the limits
 ax.set_xlim([0, time_limit])
